@@ -1,0 +1,1 @@
+Initial release. Open ZIP archives, find APK files, and continue installation with Android's system installer.
