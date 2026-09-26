@@ -7,6 +7,10 @@ android {
     namespace = "com.pulipulichen.ziptoapk"
     compileSdk = 36
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     defaultConfig {
         applicationId = "com.pulipulichen.ziptoapk"
         minSdk = 26
