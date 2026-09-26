@@ -63,31 +63,56 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
-      - name: Verify signing secrets
+      - name: Decode fixed CI signing keystore
+        env:
+          # Public CI-only key. This intentionally makes Actions APK signatures stable
+          # without requiring repository secrets. Do not use this key for Play releases.
+          CI_KEYSTORE_BASE64: >-
+            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
+        run: |
+          printf '%s' "$CI_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/android-ci-release.jks"
+          chmod 600 "$RUNNER_TEMP/android-ci-release.jks"
+          keytool -list \
+            -keystore "$RUNNER_TEMP/android-ci-release.jks" \
+            -storepass android-ci-signing \
+            -alias zip-to-apk-ci >/dev/null
+      - name: Build fixed-signature release APK
+        run: >-
+          gradle --no-daemon assembleRelease
+          -PRELEASE_STORE_FILE="$RUNNER_TEMP/android-ci-release.jks"
+          -PRELEASE_STORE_PASSWORD="android-ci-signing"
+          -PRELEASE_KEY_ALIAS="zip-to-apk-ci"
+          -PRELEASE_KEY_PASSWORD="android-ci-signing"
+      - name: Check optional Play signing secrets
+        id: play-signing
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "Configure ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD in repository Actions secrets to produce the fixed-signature release APK."
-            exit 1
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Play signing secrets are not configured; the fixed-signature APK will still be uploaded, but the Play-signed AAB will be skipped."
           fi
-      - name: Decode release keystore
+      - name: Decode Play release keystore
+        if: steps.play-signing.outputs.configured == 'true'
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/android-release.jks"
-          chmod 600 "$RUNNER_TEMP/android-release.jks"
-      - name: Build signed release APK
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/android-play-release.jks"
+          chmod 600 "$RUNNER_TEMP/android-play-release.jks"
+      - name: Build Play-signed AAB
+        if: steps.play-signing.outputs.configured == 'true'
         env:
-          KEYSTORE_FILE: ${{ runner.temp }}/android-release.jks
+          KEYSTORE_FILE: ${{ runner.temp }}/android-play-release.jks
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: >-
-          gradle --no-daemon assembleRelease bundleRelease
+          gradle --no-daemon bundleRelease
           -PRELEASE_STORE_FILE="$KEYSTORE_FILE"
           -PRELEASE_STORE_PASSWORD="$KEYSTORE_PASSWORD"
           -PRELEASE_KEY_ALIAS="$KEY_ALIAS"
