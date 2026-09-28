@@ -12,7 +12,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     defaultConfig {
-        applicationId = "com.pulipulichen.ziptoapk"
+        applicationId = "info.pulipuli.androidn.ziptoapk"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
