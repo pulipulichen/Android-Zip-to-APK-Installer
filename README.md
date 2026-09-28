@@ -32,4 +32,4 @@ ZIP contents are processed locally. The app extracts only `.apk` files into its 
 
 ## Google Play materials
 
-Draft store copy, privacy policy, release notes, and a pre-submission checklist are in [`play/`](play/). Replace the privacy policy contact placeholder and host the policy at a public URL before submitting the app.
+Draft store copy, privacy policy, release notes, and a pre-submission checklist are in [`google_play/`](google_play/). Replace the privacy policy contact placeholder and host the policy at a public URL before submitting the app.
