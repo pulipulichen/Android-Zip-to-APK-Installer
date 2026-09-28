@@ -10,10 +10,14 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.Gravity
 import android.view.ViewGroup
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
@@ -45,8 +49,7 @@ class MainActivity : Activity() {
             else -> null
         }
         if (uri == null) {
-            Toast.makeText(this, "請從檔案管理員開啟 ZIP 檔。", Toast.LENGTH_LONG).show()
-            mainHandler.postDelayed({ if (!isFinishing) finish() }, 1_500)
+            showInstructions()
             return
         }
         launched = true
@@ -69,6 +72,78 @@ class MainActivity : Activity() {
                 }
             }
         }
+    }
+
+    private fun showInstructions() {
+        val ink = Color.rgb(25, 51, 49)
+        val teal = Color.rgb(0, 116, 106)
+        val page = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(32), dp(24), dp(32))
+            setBackgroundColor(Color.rgb(247, 250, 249))
+        }
+        fun heading(value: String, size: Float) = TextView(this).apply {
+            text = value
+            textSize = size
+            setTextColor(ink)
+            setTypeface(null, Typeface.BOLD)
+        }
+        fun detail(value: String) = TextView(this).apply {
+            text = value
+            textSize = 16f
+            setTextColor(Color.rgb(67, 85, 82))
+            setLineSpacing(dp(4).toFloat(), 1f)
+        }
+        page.addView(heading("ZIP → APK", 30f))
+        page.addView(detail("從 ZIP 壓縮檔找出 APK，交給 Android 安裝。"), LinearLayout.LayoutParams(-1, -2).apply {
+            topMargin = dp(8)
+            bottomMargin = dp(28)
+        })
+        page.addView(heading("使用方法", 22f))
+        val steps = listOf(
+            "1  選擇 ZIP 檔" to "按下方按鈕，或在檔案管理員找到 ZIP 檔，選擇「開啟方式」並指定本應用程式。",
+            "2  選擇 APK" to "應用程式會搜尋 ZIP 內的 APK。如果有多個 APK，請選擇要安裝的檔案。",
+            "3  確認安裝" to "首次使用時，依 Android 提示允許此來源安裝應用程式，再於系統安裝畫面確認。"
+        )
+        steps.forEach { (title, description) ->
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(18), dp(16), dp(18), dp(16))
+                background = GradientDrawable().apply {
+                    setColor(Color.WHITE)
+                    cornerRadius = dp(16).toFloat()
+                }
+                addView(heading(title, 18f))
+                addView(detail(description), LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
+            }
+            page.addView(card, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+        }
+        page.addView(detail("只會處理 ZIP 內的 APK；安裝前請確認檔案來源可信。"), LinearLayout.LayoutParams(-1, -2).apply {
+            topMargin = dp(24)
+            bottomMargin = dp(20)
+        })
+        page.addView(Button(this).apply {
+            text = "選擇 ZIP 檔"
+            isAllCaps = false
+            textSize = 17f
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply {
+                setColor(teal)
+                cornerRadius = dp(12).toFloat()
+            }
+            setOnClickListener {
+                val picker = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream"))
+                }
+                startActivityForResult(picker, REQUEST_PICK_ZIP)
+            }
+        }, LinearLayout.LayoutParams(-1, dp(56)))
+        setContentView(ScrollView(this).apply {
+            fillViewport = true
+            addView(page)
+        })
     }
 
     private fun extractApks(uri: Uri): List<ExtractedApk> {
@@ -147,6 +222,12 @@ class MainActivity : Activity() {
     @Deprecated("Required for the Android unknown-apps settings flow on API 26+")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_PICK_ZIP) {
+            if (resultCode == RESULT_OK && data?.data != null) {
+                handleIntent(Intent(Intent.ACTION_VIEW, data.data))
+            }
+            return
+        }
         if (requestCode == REQUEST_INSTALL_PERMISSION) {
             val apk = pendingApk
             if (apk != null && packageManager.canRequestPackageInstalls()) launchInstaller(apk) else finish()
@@ -209,6 +290,7 @@ class MainActivity : Activity() {
 
     companion object {
         private const val REQUEST_INSTALL_PERMISSION = 701
+        private const val REQUEST_PICK_ZIP = 702
         private const val MAX_APKS = 100
         private const val MAX_APK_BYTES = 512L * 1024 * 1024
         private const val MAX_TOTAL_BYTES = 1024L * 1024 * 1024
