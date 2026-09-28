@@ -95,8 +95,16 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Play signing secrets are not configured; the fixed-signature APK will still be uploaded, but the Play-signed AAB will be skipped."
+            echo "::notice::Play signing secrets are not configured; the AAB will use the public CI test key. Configure Play signing secrets before your first Play upload."
           fi
+      - name: Build CI-signed release AAB
+        if: steps.play-signing.outputs.configured != 'true'
+        run: >-
+          gradle --no-daemon bundleRelease
+          -PRELEASE_STORE_FILE="$RUNNER_TEMP/android-ci-release.jks"
+          -PRELEASE_STORE_PASSWORD="android-ci-signing"
+          -PRELEASE_KEY_ALIAS="zip-to-apk-ci"
+          -PRELEASE_KEY_PASSWORD="android-ci-signing"
       - name: Decode Play release keystore
         if: steps.play-signing.outputs.configured == 'true'
         env:
