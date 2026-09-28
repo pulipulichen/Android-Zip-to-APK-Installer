@@ -141,7 +141,7 @@ class MainActivity : Activity() {
             }
         }, LinearLayout.LayoutParams(-1, dp(56)))
         setContentView(ScrollView(this).apply {
-            fillViewport = true
+            setFillViewport(true)
             addView(page)
         })
     }
